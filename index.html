@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <title>Bate-papo Node.js e Socket.IO</title>
+  </head>
+
+  <style>
+
+    header {
+      text-align: right;
+      background-color: rgb(17, 53, 95);
+      border-radius: 20px 20px 0px 0px;
+    }
+    
+    body {
+      background-color: rgb(12, 12, 12);
+      height: 100vh;
+      color: white;
+    }
+    
+    ul #mensagens {
+      flex-grow: 1;
+      list-style-type: none;
+
+      margin: 0;
+      overflow-y: auto; /* Adiciona scroll se a lista for muito longa */
+    }
+    
+    li {
+      margin: 10px;
+      margin-right: 30px;
+      padding: 15px;
+      text-align: left;
+      background-color: #5851db;
+      border-radius: 15px;
+      word-break: break-all;
+      color: white;
+      list-style-type: none;
+      font-size: 23px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .divPrincipal {
+      display: flex;       /* Ativa o layout Flexbox */
+      width: 80%;        /* Quanto de tamanho terá */
+      height: calc(100vh - 10px);
+
+
+    }
+
+    .divEsquer, .divDire {
+      padding: 10px;
+    }
+    
+    .divDire {
+      border: 2px solid rgb(78, 78, 78);
+      padding: 5px;
+      width: 65%;   
+      flex-direction: column;
+      overflow-y: auto;
+      box-shadow: 3px 3px 16px rgb(24, 23, 23);
+      border-radius: 20px;
+      
+    }
+    
+    .divEsquer {
+      border: 2px solid rgb(78, 78, 78);
+      padding: 20px;
+      margin: 0 auto;
+      padding: 0;
+      width: 25%;     
+      box-shadow: 3px 3px 16px rgb(24, 23, 23);      
+      border-radius: 20px;
+      overflow-y: auto;
+      
+    }
+    
+    .divEsquer h1 {
+      text-align: left;
+      margin: 0px 15px 10px 15px;
+      padding: 15px 5px 15px 5px;
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    .divEsquer h3 {
+      margin: 0px 0px 0px 5px;
+    }
+
+    .divEsquer h5 {
+      margin: 5px 0px 0px 5px;
+    }
+
+    .grupinhos {
+      background-color: rgb(44, 44, 44);
+      padding-bottom: 7px;
+      padding-top: 5px;
+      margin: 20px 0px 0px 0px;
+      border-radius: 5px 0px 0px 5px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+        
+    .divDire form {
+      box-shadow: 1px 1px 16px rgb(44, 44, 44);
+      border-radius: 20px;
+      position: fixed;
+      right: 2.5%;
+      top: 35%;  /* Distância do topo da tela */
+      width: 250px; /* Defina uma largura fixa para o formulário, pois elementos fixos precisam de uma */
+      padding: 15px 20px 15px 20px;
+      gap: 30px;
+      display: flex;
+      flex-direction: column;
+      background-color: rgb(12, 27, 51);
+      border: 1px solid rgba(23, 0, 34, 0.637);
+    }
+
+    .divDire textarea {
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      right: 28px;
+      top: 200px; 
+      width: 230px;
+      padding: 10px;
+      border-radius: 10px;
+      gap: 30px;
+      display: flex;
+      flex-direction: column;
+      resize: none;
+      font-size: 18px;
+      outline: none;
+      border: 1px solid black;
+      background-color: rgb(210, 234, 255);
+    }
+
+    .divDire textarea:hover {
+      border: 1px solid rgb(143, 0, 209);
+    }    
+
+    .divDire textarea::placeholder {
+      font-size: 18px;
+      color: rgb(41, 41, 41);
+    }
+    
+    input {
+      flex-grow: 1;   /* Flex-grow: 1 faz os inputs ocuparem o espaço disponível, ficando responsivos*/
+      padding: 5px;
+      border-radius: 8px;
+      word-break: break-all;
+      height: 35px;
+      background-color: grey;
+      color: white;
+      font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+      font-size: 20px;
+      outline: none;
+      border: 1px solid black;
+      box-sizing: border-box;
+    }
+    
+    input:hover {
+      border: 1px solid rgb(143, 0, 209);
+    }
+    
+    input::placeholder {
+      color: rgb(212, 212, 212);
+    }
+
+    .divDire button {
+      height: 30px;
+      width: 100px;
+      margin-right: auto;
+      margin-left: auto;
+      border-radius: 15px;
+      font-size: 18px;
+      transform: scale(1.1);
+      font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+      background-color: rgb(0, 85, 45);
+      border: none;
+      color: white;
+      transition: 300ms ease;
+    }
+
+    .divDire button:hover {
+      cursor: pointer;
+      transform: scale(1.3);
+      border: 1px solid rgb(252, 252, 101);
+      background-color: rgb(27, 134, 84);
+      color: black;
+    }
+
+    
+  </style>
+
+
+  <body>
+
+      <div class="divPrincipal">
+
+        <div class="divEsquer">
+          <header>
+            <h1>Grupão</h1>
+          </header>
+
+          <div class="grupinhos">
+            <h3>Grupo TCC</h3>
+            <h5>4 membros</h5>
+          </div>
+
+          <div class="grupinhos">
+            <h3>Turma A - I1P2</h3>
+            <h5>16 membros</h5>
+          </div>
+
+          <div class="grupinhos">
+            <h3>2ºs do médio</h3>
+            <h5>64 membros</h5>
+          </div>
+
+          <div class="grupinhos">
+            <h3>Fã clube Bruno</h3>
+            <h5>1 membro</h5>
+          </div>
+
+          <div class="grupinhos">
+            <h3>Fans do Fujitão</h3>
+            <h5>32 membros</h5>
+          </div>
+
+        </div>
+
+        <div class="divDire" id="rolarPraBaixo">
+          <ul  type="" id="mensagens"></ul>
+          <!-- Importa o script do Socket.IO -->
+          <script src="/socket.io/socket.io.js"></script>
+          <form>
+            <input id="nome" placeholder="Seu nome de usuário" autocomplete="off" type="text" required/>
+            <textarea id="mensagem" placeholder="Sua mensagem" autocomplete="off" required rows="5"></textarea>
+            <button>Enviar</button>
+          </form>
+
+          <script>
+            // Cria uma instância do Socket.IO
+            const socket = io();
+            // Seleciona o input do nome do usuário
+            const nomeInput = document.getElementById('nome');
+            // Seleciona o input da mensagem
+            const mensagemInput = document.getElementById('mensagem');
+            // Seleciona a lista de mensagens
+            const mensagens = document.getElementById('mensagens');
+            
+            // Adiciona um evento de escuta para o envio do formulário
+            document.querySelector('form').addEventListener('submit', event => {
+              // Previne o envio padrão do formulário
+              event.preventDefault();
+              // Obtém o valor do input do nome do usuário
+              const nome = nomeInput.value;
+              // Obtém o valor do input da mensagem
+              const mensagem = mensagemInput.value;
+              // Verifica se ambos os campos foram preenchidos antes de enviar a mensagem
+              // Verifica se os valores são válidos (não estão em branco)
+              //trim() é um método da linguagem JavaScript que remove os espaços em branco do início e do final de uma string.
+              // emit envia um evento chamado "chat message" com um objeto contendo os valores de nome e mensagem para o servidor.
+              nome.trim() && mensagem.trim() && socket.emit('chat message', { nome, mensagem });
+              // Limpa o input da mensagem
+              mensagemInput.value = '';
+              // Desabilita o input do nome do usuário após a primeira mensagem
+              nomeInput.disabled = true; 
+            });
+            // Adiciona um evento de escuta para o evento de mensagem recebido do servidor
+            socket.on('chat message', dados => {
+              // Cria um elemento de lista para exibir a mensagem
+              const lista = document.createElement('li');
+              // Define o texto da mensagem
+              lista.textContent = `${dados.nome}: ${dados.mensagem}`;
+
+              if(dados.mensagem){
+                lista.innerHTML = `<strong>${dados.nome}:</strong> ${dados.mensagem}`;                
+              }
+
+              // Adiciona o elemento de lista à lista de mensagens
+              mensagens.appendChild(lista);
+
+              //Faz com que a cada mensagem enviada, desça a tela
+              const rolar = document.getElementById('rolarPraBaixo')
+              rolar.scrollTop = rolar.scrollHeight;
+
+            });
+
+
+          </script>
+        </div>
+
+      </div>
+
+  </body>
+</html>
